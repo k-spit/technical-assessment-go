@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: userdb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+
+  api:
+    build: .
+    container_name: api
+    environment:
+      - API_URL=0.0.0.0
+      - API_PORT=8080
+      - ENABLE_CACHE=true
+      - ENABLE_RATE_LIMITING=true
+      - DATABASE_URL=postgres://user:password@db:5432/userdb?sslmode=disable
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+
+volumes:
+  db_data:
